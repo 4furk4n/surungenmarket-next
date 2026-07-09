@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { catPath } from "@/lib/categories";
+import AuthButtons from "@/components/AuthButtons";
 
 export default function Header() {
   return (
@@ -23,9 +24,7 @@ export default function Header() {
         </Link>
         <div className="search"><input id="q" type="text" placeholder="Tür, morph veya şehir ara: leopar gecko, ankara..." /></div>
         <div className="auth">
-          <button className="btn btn-ghost">Giriş yap</button>
-          <button className="btn btn-ghost">Üye ol</button>
-          <button className="btn btn-primary">+ İlan ver</button>
+          <AuthButtons />
         </div>
       </div>
       <nav>
