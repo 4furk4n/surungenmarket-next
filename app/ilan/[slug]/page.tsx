@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
+import FavButton from "@/components/FavButton";
 import { getSupabasePublic } from "@/lib/supabase/public";
 import { listingImageUrl } from "@/lib/publicUrl";
 import { catPath } from "@/lib/categories";
@@ -114,12 +115,13 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                 {seller.avatar_url ? <img src={seller.avatar_url} alt={seller.username} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}
               </div>
               <div>
-                <div style={{ fontWeight: 600 }}>{seller.username || "Satıcı"}</div>
+                <div style={{ fontWeight: 600 }}>{seller.username ? <a href={`/magaza/${seller.username}`} style={{ color: "#fff", textDecoration: "none" }}>{seller.username}</a> : "Satıcı"}</div>
                 {seller.city ? <div style={{ fontSize: 12, color: "var(--muted)" }}>{seller.city}</div> : null}
               </div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 6 }}>
               <button className="btn btn-primary">💬 Mesaj gönder</button>
+              <FavButton listingId={l.id} />
               {l.whatsapp ? <a className="btn btn-ghost" href={`https://wa.me/${String(l.whatsapp).replace(/\D/g, "")}`} target="_blank" rel="nofollow noopener">WhatsApp'tan yaz</a> : null}
               {l.instagram ? <a className="btn btn-ghost" href={`https://instagram.com/${String(l.instagram).replace(/^@/, "")}`} target="_blank" rel="nofollow noopener">Instagram · @{String(l.instagram).replace(/^@/, "")}</a> : null}
             </div>

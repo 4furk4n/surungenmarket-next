@@ -6,7 +6,7 @@ import { getSupabasePublic } from "@/lib/supabase/public";
 import { siteAssetUrl } from "@/lib/publicUrl";
 import { catPath } from "@/lib/categories";
 
-export const revalidate = 300;
+export const revalidate = 60;
 
 export default async function Home() {
   const sb = getSupabasePublic();
