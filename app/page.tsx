@@ -1,20 +1,28 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ListingCard from "@/components/ListingCard";
+import { getSupabasePublic } from "@/lib/supabase/public";
+import { siteAssetUrl } from "@/lib/publicUrl";
 import { catPath } from "@/lib/categories";
 
-const cats = [
-  { db: "kertenkele", name: "Leopar geckolar", count: "124 ilan", img: "https://loremflickr.com/480/360/leopardgecko?lock=1", alt: "Leopar gecko satılık ilanları" },
-  { db: "yilan", name: "Top pitonlar", count: "86 ilan", img: "https://loremflickr.com/480/360/ballpython?lock=2", alt: "Top piton satılık ilanları" },
-  { db: "kertenkele", name: "Sakallı ejderler", count: "57 ilan", img: "https://loremflickr.com/480/360/beardeddragon?lock=3", alt: "Sakallı ejder satılık ilanları" },
-  { db: "kertenkele", name: "Bukalemunlar", count: "34 ilan", img: "https://loremflickr.com/480/360/chameleon?lock=4", alt: "Bukalemun satılık ilanları" },
-  { db: "kaplumbaga", name: "Kaplumbağalar", count: "43 ilan", img: "https://loremflickr.com/480/360/tortoise?lock=5", alt: "Kaplumbağa ilanları" },
-  { db: "amfibi", name: "Amfibiler", count: "31 ilan", img: "https://loremflickr.com/480/360/axolotl?lock=6", alt: "Aksolotl ve amfibi ilanları" },
-  { db: "eklem", name: "Tarantulalar", count: "28 ilan", img: "https://loremflickr.com/480/360/tarantula?lock=7", alt: "Tarantula satılık ilanları" },
-  { db: "memeli", name: "Egzotik memeliler", count: "19 ilan", img: "https://loremflickr.com/480/360/hedgehog?lock=8", alt: "Kirpi ve egzotik memeli ilanları" },
-];
+export const revalidate = 300;
 
-export default function Home() {
+export default async function Home() {
+  const sb = getSupabasePublic();
+  const [{ data: cats }, { data: assets }, { data: listings }] = await Promise.all([
+    sb.from("categories").select("slug,name,sort").order("sort", { ascending: true }),
+    sb.from("site_assets").select("key,storage_path"),
+    sb.from("listings").select("slug,title,species,morph,sex,age_text,price,city,created_at,listing_images(storage_path,position)").order("created_at", { ascending: false }).limit(12),
+  ]);
+
+  const map: Record<string, string> = {};
+  (assets || []).forEach((a: any) => { if (a.key) map[a.key] = a.storage_path; });
+  const heroUrl = siteAssetUrl(map["hero"]);
+  const rows = (listings || []).map((l: any) => ({
+    ...l, cover: (l.listing_images || []).sort((a: any, b: any) => (a.position || 0) - (b.position || 0))[0]?.storage_path || null,
+  }));
+
   return (
     <>
       <Header />
@@ -29,21 +37,37 @@ export default function Home() {
                 <button className="btn btn-ghost">Hesap oluştur</button>
               </div>
             </div>
-            <div className="hero-img"><img src="https://loremflickr.com/1120/720/greentreepython?lock=11" alt="Yeşil ağaç pitonu" /></div>
+            <div className="hero-img">
+              {heroUrl ? <img src={heroUrl} alt="Egzotik hayvanlar" /> : <div style={{ height: 360, background: "var(--bg-3)" }} />}
+            </div>
           </div>
         </section>
 
         <section className="section">
-          <div className="section-head"><h2>Kategoriler</h2><Link href="/ilanlar">Tüm kategorileri gör →</Link></div>
+          <div className="section-head"><h2>Kategoriler</h2><Link href="/bakim-rehberi">Bakım rehberleri →</Link></div>
           <div className="cats">
-            {cats.map((c, i) => (
-              <Link className="cat" href={catPath(c.db)} key={i}>
-                <div className="thumb"><img src={c.img} alt={c.alt} loading="lazy" /></div>
-                <div className="name">{c.name}</div>
-                <div className="count">{c.count}</div>
-              </Link>
-            ))}
+            {(cats || []).map((c: any) => {
+              const img = siteAssetUrl(map["cat_" + c.slug]);
+              return (
+                <Link className="cat" href={catPath(c.slug)} key={c.slug}>
+                  <div className="thumb">
+                    {img ? <img src={img} alt={`${c.name} ilanları`} loading="lazy" />
+                         : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 140, color: "var(--muted)", fontSize: 13 }}>Görsel yakında</div>}
+                  </div>
+                  <div className="name">{c.name}</div>
+                </Link>
+              );
+            })}
           </div>
+        </section>
+
+        <section className="section" id="ilanlar">
+          <div className="section-head"><h2>Güncel ilanlar</h2><Link href="/ilanlar">Tümünü gör →</Link></div>
+          {rows.length ? (
+            <div className="grid">{rows.map((l: any) => <ListingCard key={l.slug} l={l} />)}</div>
+          ) : (
+            <p style={{ color: "var(--muted)", textAlign: "center", padding: "44px 0" }}>Henüz yayında ilan yok. Üye olup ilk ilanı verebilirsin.</p>
+          )}
         </section>
       </div>
       <Footer />

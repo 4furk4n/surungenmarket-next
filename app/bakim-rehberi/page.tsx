@@ -17,31 +17,44 @@ export const metadata: Metadata = {
 
 export default async function GuidesIndex() {
   const sb = getSupabasePublic();
-  const { data: guides } = await sb.from("guides")
-    .select("slug,name,latin,level,image_path,sort")
-    .order("sort", { ascending: true });
+  const [{ data: cats }, { data: guides }] = await Promise.all([
+    sb.from("categories").select("slug,name,sort").order("sort", { ascending: true }),
+    sb.from("guides").select("slug,name,latin,level,image_path,category_slug,sort").order("sort", { ascending: true }),
+  ]);
 
-  const list = guides || [];
-  const jsonLd = {
-    "@context": "https://schema.org", "@type": "CollectionPage",
-    name: "Bakım Rehberleri", url: SITE_URL + "/bakim-rehberi",
-    isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL },
-  };
+  const all = guides || [];
+  const groups = (cats || [])
+    .map((c: any) => ({ cat: c, items: all.filter((g: any) => g.category_slug === c.slug) }))
+    .filter((grp: any) => grp.items.length > 0);
+  const grouped = new Set((cats || []).map((c: any) => c.slug));
+  const others = all.filter((g: any) => !g.category_slug || !grouped.has(g.category_slug));
 
   return (
     <>
       <Header />
-      <JsonLd data={jsonLd} />
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: "Bakım Rehberleri", url: SITE_URL + "/bakim-rehberi", isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL } }} />
       <main className="section">
         <div className="crumb"><a href="/">Ana sayfa</a><span>›</span><span>Bakım rehberleri</span></div>
         <div className="section-head"><h2>Bakım Rehberleri</h2></div>
         <p style={{ color: "var(--muted)", maxWidth: 640, lineHeight: 1.6, marginBottom: 8 }}>
           Sahiplenmeden önce türün ihtiyaçlarını öğren: doğru terraryum, ısı ve nem aralığı, beslenme ve sık görülen sağlık sorunları.
         </p>
-        <div className="guide-grid">
-          {list.map((g: any) => <GuideCard key={g.slug} g={g} />)}
-        </div>
-        {list.length === 0 ? <p style={{ color: "var(--muted)" }}>Rehberler yakında.</p> : null}
+
+        {groups.map((grp: any) => (
+          <section key={grp.cat.slug} style={{ marginTop: 30 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px" }}>{grp.cat.name}</h3>
+            <div className="guide-grid">
+              {grp.items.map((g: any) => <GuideCard key={g.slug} g={g} />)}
+            </div>
+          </section>
+        ))}
+
+        {others.length ? (
+          <section style={{ marginTop: 30 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px" }}>Diğer</h3>
+            <div className="guide-grid">{others.map((g: any) => <GuideCard key={g.slug} g={g} />)}</div>
+          </section>
+        ) : null}
       </main>
       <Footer />
     </>
