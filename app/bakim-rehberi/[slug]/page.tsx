@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import { getSupabasePublic } from "@/lib/supabase/public";
-import { assetImg } from "@/lib/publicUrl";
+import { listingImageUrl } from "@/lib/publicUrl";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 export const revalidate = 600;
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const url = SITE_URL + "/bakim-rehberi/" + g.slug;
   const title = g.seo_title || `${g.name} Bakımı — Terraryum, Isı, Beslenme`;
   const desc = g.seo_description || `${g.name} (${g.latin || ""}) bakım rehberi: terraryum kurulumu, sıcaklık ve nem, beslenme, sağlık ve sık sorulanlar.`;
-  const ogImg = assetImg(g.og_image || g.image_path);
+  const ogImg = listingImageUrl(g.og_image || g.image_path);
   return {
     title, description: desc,
     alternates: { canonical: g.canonical_url || url },
@@ -40,7 +40,7 @@ export default async function GuideDetail({ params }: { params: Promise<{ slug: 
   if (!g) notFound();
 
   const url = SITE_URL + "/bakim-rehberi/" + g.slug;
-  const img = assetImg(g.image_path);
+  const img = listingImageUrl(g.image_path);
   const paras = arr(g.body);
   const tips = arr(g.tips);
   const faqs = faqArr(g.faq);

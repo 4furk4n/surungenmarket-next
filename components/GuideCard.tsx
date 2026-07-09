@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { assetImg } from "@/lib/publicUrl";
+import { listingImageUrl } from "@/lib/publicUrl";
 
 type G = { slug: string; name: string; latin?: string | null; level?: string | null; image_path?: string | null };
 
 export default function GuideCard({ g }: { g: G }) {
-  const img = assetImg(g.image_path);
+  const img = listingImageUrl(g.image_path);
   const lvl = (g.level || "").toLowerCase();
   return (
     <Link className="g-card" href={`/bakim-rehberi/${g.slug}`} style={{ textDecoration: "none", color: "inherit", display: "block" }}>

@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import { getSupabasePublic } from "@/lib/supabase/public";
-import { assetImg } from "@/lib/publicUrl";
+import { listingImageUrl } from "@/lib/publicUrl";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 export const revalidate = 300;
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const url = SITE_URL + "/blog/" + p.slug;
   const title = p.seo_title || p.title;
   const desc = p.seo_description || p.excerpt || "";
-  const ogImg = assetImg(p.og_image || p.cover_path);
+  const ogImg = listingImageUrl(p.og_image || p.cover_path);
   return {
     title, description: desc,
     alternates: { canonical: p.canonical_url || url },
@@ -39,7 +39,7 @@ export default async function BlogDetail({ params }: { params: Promise<{ slug: s
   if (!p) notFound();
 
   const url = SITE_URL + "/blog/" + p.slug;
-  const img = assetImg(p.cover_path);
+  const img = listingImageUrl(p.cover_path);
   const paras = arr(p.body);
   const faqs = faqArr(p.faq);
 

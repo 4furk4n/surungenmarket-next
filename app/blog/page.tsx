@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import { getSupabasePublic } from "@/lib/supabase/public";
-import { assetImg } from "@/lib/publicUrl";
+import { listingImageUrl } from "@/lib/publicUrl";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 export const revalidate = 300;
@@ -32,7 +32,7 @@ export default async function BlogIndex() {
         {list.length ? (
           <div className="guide-grid">
             {list.map((p: any) => {
-              const img = assetImg(p.cover_path);
+              const img = listingImageUrl(p.cover_path);
               return (
                 <Link key={p.slug} className="g-card" href={`/blog/${p.slug}`} style={{ textDecoration: "none", color: "inherit", display: "block" }}>
                   <div className="gp">{img ? <img src={img} alt={p.title} loading="lazy" /> : <div style={{ width: "100%", height: "100%", background: "var(--bg-3)" }} />}</div>
