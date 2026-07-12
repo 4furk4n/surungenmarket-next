@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import FavButton from "@/components/FavButton";
+import MessageSeller from "@/components/MessageSeller";
 import { getSupabasePublic } from "@/lib/supabase/public";
 import { listingImageUrl } from "@/lib/publicUrl";
 import { catPath } from "@/lib/categories";
@@ -120,7 +121,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
               </div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 6 }}>
-              <button className="btn btn-primary">💬 Mesaj gönder</button>
+              <MessageSeller listingId={l.id} sellerId={l.user_id} sellerName={seller.username} />
               <FavButton listingId={l.id} />
               {l.whatsapp ? <a className="btn btn-ghost" href={`https://wa.me/${String(l.whatsapp).replace(/\D/g, "")}`} target="_blank" rel="nofollow noopener">WhatsApp'tan yaz</a> : null}
               {l.instagram ? <a className="btn btn-ghost" href={`https://instagram.com/${String(l.instagram).replace(/^@/, "")}`} target="_blank" rel="nofollow noopener">Instagram · @{String(l.instagram).replace(/^@/, "")}</a> : null}

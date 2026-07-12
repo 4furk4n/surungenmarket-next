@@ -38,6 +38,7 @@ export default function AuthButtons() {
     <>
       {user ? (
         <>
+          <a className="btn btn-ghost" href="/mesajlar">✉ Mesajlar</a>
           <a className="btn btn-ghost" href="/hesabim">👤 Hesabım</a>
           <button className="btn btn-ghost" onClick={() => sb.auth.signOut()}>Çıkış</button>
         </>
