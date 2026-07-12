@@ -37,11 +37,11 @@ export default function Admin() {
         {uid && role === "admin" ? (
           <>
             <div style={{ display: "flex", gap: 4, borderBottom: "1px solid var(--border)", marginBottom: 22 }}>
-              {([["blog", "Blog"], ["guide", "Rehber SEO"]] as const).map(([k, l]) => (
+              {([["blog", "Blog"], ["guide", "Rehber SEO"], ["images", "Site Görselleri"], ["cats", "Kategoriler"]] as const).map(([k, l]) => (
                 <button key={k} onClick={() => setTab(k)} style={{ background: "none", border: "none", cursor: "pointer", padding: "11px 16px", fontSize: 14.5, fontWeight: 600, color: tab === k ? "#fff" : "var(--muted)", borderBottom: tab === k ? "2px solid #fff" : "2px solid transparent", marginBottom: -1 }}>{l}</button>
               ))}
             </div>
-            {tab === "blog" ? <BlogAdmin uid={uid} /> : <GuideSeoAdmin />}
+            {tab === "blog" ? <BlogAdmin uid={uid} /> : tab === "guide" ? <GuideSeoAdmin /> : tab === "images" ? <SiteAssetsAdmin uid={uid} /> : <CategoriesAdmin />}
           </>
         ) : null}
       </main>
@@ -226,5 +226,95 @@ function GuideSeoAdmin() {
         </>
       ) : null}
     </form>
+  );
+}
+
+function SiteAssetsAdmin({ uid }: { uid: string }) {
+  const sb = getSupabaseBrowser();
+  const [assets, setAssets] = useState<Record<string, string>>({});
+  const [cats, setCats] = useState<any[]>([]);
+  const [msg, setMsg] = useState("");
+
+  async function load() {
+    const [{ data: a }, { data: c }] = await Promise.all([
+      sb.from("site_assets").select("key,storage_path"),
+      sb.from("categories").select("slug,name").order("sort", { ascending: true }),
+    ]);
+    const m: Record<string, string> = {}; (a || []).forEach((x: any) => (m[x.key] = x.storage_path)); setAssets(m); setCats(c || []);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function upload(key: string, file: File) {
+    setMsg(`${key} yükleniyor…`);
+    const ext = (file.name.split(".").pop() || "png").toLowerCase();
+    const path = `${key}/${Date.now()}.${ext}`;
+    const up = await sb.storage.from("site-assets").upload(path, file, { upsert: true });
+    if (up.error) { setMsg("Hata: " + up.error.message); return; }
+    const { error } = await sb.from("site_assets").upsert({ key, storage_path: path }, { onConflict: "key" });
+    if (error) { setMsg("Hata: " + error.message); return; }
+    setAssets((p) => ({ ...p, [key]: path })); setMsg(`${key} güncellendi ✓`);
+  }
+
+  const items = [
+    { key: "hero", label: "Hero (ana görsel)" },
+    { key: "logo", label: "Logo" },
+    ...cats.map((c: any) => ({ key: "cat_" + c.slug, label: "Kategori: " + c.name })),
+  ];
+
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 4 }}>Görseller Supabase'e yüklenir; site birkaç dakikada günceller.</p>
+      {msg ? <p style={{ fontSize: 13, color: "var(--muted)" }}>{msg}</p> : null}
+      {items.map((it) => (
+        <div key={it.key} style={{ display: "flex", alignItems: "center", gap: 14, padding: "10px 14px", border: "1px solid var(--border)", borderRadius: 10, background: "var(--bg-2)" }}>
+          <div style={{ width: 80, height: 54, borderRadius: 8, overflow: "hidden", background: "var(--bg-3)", flexShrink: 0 }}>
+            {assets[it.key] ? <img src={siteAssetUrl(assets[it.key]) || ""} alt={it.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: 14 }}>{it.label}</div>
+            <div style={{ fontSize: 12, color: "var(--muted)" }}>{assets[it.key] ? "Yüklü" : "Görsel yok"}</div>
+          </div>
+          <label className="btn btn-ghost" style={{ fontSize: 13, cursor: "pointer" }}>
+            Değiştir<input type="file" accept="image/*" onChange={(e) => { const fi = e.target.files?.[0]; if (fi) upload(it.key, fi); }} style={{ display: "none" }} />
+          </label>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CategoriesAdmin() {
+  const sb = getSupabaseBrowser();
+  const [cats, setCats] = useState<any[]>([]);
+  const [nw, setNw] = useState({ slug: "", name: "" });
+  const [msg, setMsg] = useState("");
+
+  async function load() { const { data } = await sb.from("categories").select("id,slug,name,sort").order("sort", { ascending: true }); setCats(data || []); }
+  useEffect(() => { load(); }, []);
+
+  function setField(id: string, k: string, v: string) { setCats((p) => p.map((c) => (c.id === id ? { ...c, [k]: v } : c))); }
+  async function save(c: any) { const { error } = await sb.from("categories").update({ name: c.name, sort: c.sort ? parseInt(String(c.sort), 10) : 0 }).eq("id", c.id); setMsg(error ? "Hata: " + error.message : "Kaydedildi ✓"); }
+  async function add(e: React.FormEvent) { e.preventDefault(); if (!nw.slug || !nw.name) return; const { error } = await sb.from("categories").insert({ slug: nw.slug, name: nw.name, sort: cats.length + 1 }); if (error) { setMsg("Hata: " + error.message); return; } setNw({ slug: "", name: "" }); load(); }
+  async function del(id: string) { if (!confirm("Kategoriyi silmek istediğine emin misin? Bu kategorideki ilanlar kategorisiz kalabilir.")) return; const { error } = await sb.from("categories").delete().eq("id", id); if (error) setMsg("Silinemedi: " + error.message); else load(); }
+
+  return (
+    <div style={{ display: "grid", gap: 10, maxWidth: 640 }}>
+      {msg ? <p style={{ fontSize: 13, color: "var(--muted)" }}>{msg}</p> : null}
+      {cats.map((c) => (
+        <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", border: "1px solid var(--border)", borderRadius: 10, background: "var(--bg-2)" }}>
+          <input value={c.name} onChange={(e) => setField(c.id, "name", e.target.value)} style={{ ...inS, flex: 1 }} />
+          <input value={c.sort ?? ""} onChange={(e) => setField(c.id, "sort", e.target.value)} style={{ ...inS, width: 64 }} title="Sıra" />
+          <span style={{ fontSize: 12, color: "var(--muted)", width: 90, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>/{c.slug}</span>
+          <button className="btn btn-ghost" style={{ fontSize: 12.5, padding: "7px 12px" }} onClick={() => save(c)}>Kaydet</button>
+          <button className="btn btn-ghost" style={{ fontSize: 12.5, padding: "7px 12px" }} onClick={() => del(c.id)}>Sil</button>
+        </div>
+      ))}
+      <form onSubmit={add} style={{ display: "flex", gap: 8, marginTop: 8, alignItems: "center" }}>
+        <input value={nw.name} onChange={(e) => setNw((p) => ({ ...p, name: e.target.value }))} placeholder="Yeni kategori adı" style={{ ...inS, flex: 1 }} />
+        <input value={nw.slug} onChange={(e) => setNw((p) => ({ ...p, slug: e.target.value }))} placeholder="slug (ör. yilan)" style={{ ...inS, width: 160 }} />
+        <button className="btn btn-primary" type="submit">Ekle</button>
+      </form>
+      <p style={{ fontSize: 12, color: "var(--muted)" }}>Not: Yeni kategorinin slug&apos;ı URL&apos;de kullanılır; sade, küçük harf ve Türkçesiz yaz (ör. kus, memeli).</p>
+    </div>
   );
 }
