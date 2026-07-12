@@ -7,14 +7,18 @@ const inS: React.CSSProperties = { padding: "10px 14px", borderRadius: 9, border
 export default function AuthButtons() {
   const sb = getSupabaseBrowser();
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [open, setOpen] = useState<null | "login" | "register">(null);
   const [email, setEmail] = useState(""); const [pw, setPw] = useState("");
   const [username, setUsername] = useState(""); const [city, setCity] = useState("");
   const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    sb.auth.getUser().then(({ data }) => setUser(data.user));
-    const { data: sub } = sb.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null));
+    sb.auth.getUser().then(async ({ data }) => {
+      setUser(data.user);
+      if (data.user) { const { data: p } = await sb.from("profiles").select("role").eq("id", data.user.id).maybeSingle(); setIsAdmin((p as any)?.role === "admin"); }
+    });
+    const { data: sub } = sb.auth.onAuthStateChange((_e, s) => { setUser(s?.user ?? null); if (!s?.user) setIsAdmin(false); });
     return () => sub.subscription.unsubscribe();
   }, []);
 
@@ -38,6 +42,7 @@ export default function AuthButtons() {
     <>
       {user ? (
         <>
+          {isAdmin ? <a className="btn btn-ghost" href="/admin">⚙ Admin</a> : null}
           <a className="btn btn-ghost" href="/mesajlar">✉ Mesajlar</a>
           <a className="btn btn-ghost" href="/hesabim">👤 Hesabım</a>
           <button className="btn btn-ghost" onClick={() => sb.auth.signOut()}>Çıkış</button>
