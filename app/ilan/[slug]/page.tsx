@@ -16,8 +16,15 @@ export const revalidate = 60;
 async function getListing(slug: string) {
   const sb = getSupabasePublic();
   const { data } = await sb.from("listings")
-    .select("*, listing_images(storage_path,position), categories(slug,name), profiles(username,city,avatar_url)")
+    .select("*, listing_images(storage_path,position)")
     .eq("slug", slug).maybeSingle();
+  if (!data) return null;
+  const [{ data: cat }, { data: seller }] = await Promise.all([
+    (data as any).category_id ? sb.from("categories").select("slug,name").eq("id", (data as any).category_id).maybeSingle() : Promise.resolve({ data: null }),
+    (data as any).user_id ? sb.from("profiles").select("username,city,avatar_url").eq("id", (data as any).user_id).maybeSingle() : Promise.resolve({ data: null }),
+  ]);
+  (data as any).categories = cat;
+  (data as any).profiles = seller;
   return data as any;
 }
 
