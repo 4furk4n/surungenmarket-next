@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
-import { listingImageUrl } from "@/lib/publicUrl";
+import { listingImageUrl, siteAssetUrl } from "@/lib/publicUrl";
 
 const inS: React.CSSProperties = { padding: "9px 13px", borderRadius: 8, border: "1px solid var(--border-2)", background: "var(--bg-3)", color: "#fff", fontSize: 14, outline: "none", width: "100%" };
 const lbl: React.CSSProperties = { fontSize: 12.5, color: "var(--muted)", marginBottom: 5, display: "block", fontWeight: 600 };
@@ -14,7 +14,7 @@ export default function Admin() {
   const sb = getSupabaseBrowser();
   const [uid, setUid] = useState<string | undefined | null>(undefined);
   const [role, setRole] = useState<string | null>(null);
-  const [tab, setTab] = useState<"blog" | "guide">("blog");
+  const [tab, setTab] = useState<"blog" | "guide" | "images" | "cats">("blog");
 
   useEffect(() => {
     sb.auth.getUser().then(async ({ data }) => {
