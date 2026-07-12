@@ -60,6 +60,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ kateg
       <main className="section">
         <div className="crumb"><a href="/">Ana sayfa</a><span>›</span><a href="/ilanlar">İlanlar</a><span>›</span><span>{cat.name}</span></div>
         <div className="section-head"><h2>{cat.name}</h2></div>
+        <p style={{ color: "var(--muted)", marginBottom: 18 }}>
+          Almadan önce türün ihtiyaçlarını öğren: <a href="/bakim-rehberi" style={{ color: "#fff", textDecoration: "underline" }}>{cat.name} bakım rehberleri →</a>
+        </p>
         {rows.length ? (
           <div className="grid">{rows.map((l: any) => <ListingCard key={l.slug} l={l} />)}</div>
         ) : (

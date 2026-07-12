@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Link from "next/link";
 import JsonLd from "@/components/JsonLd";
+import ListingCard from "@/components/ListingCard";
+import GuideCard from "@/components/GuideCard";
 import { getSupabasePublic } from "@/lib/supabase/public";
 import { listingImageUrl } from "@/lib/publicUrl";
+import { catPath } from "@/lib/categories";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 export const revalidate = 600;
@@ -74,6 +78,22 @@ export default async function GuideDetail({ params }: { params: Promise<{ slug: 
     mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
   });
 
+  // İç linkleme: ilgili ilanlar + kardeş rehberler
+  const sb2 = getSupabasePublic();
+  const { data: cat } = g.category_slug
+    ? await sb2.from("categories").select("id,slug,name").eq("slug", g.category_slug).maybeSingle()
+    : { data: null };
+  let relListings: any[] = [];
+  let sibGuides: any[] = [];
+  if (cat) {
+    const [{ data: ls }, { data: gs }] = await Promise.all([
+      sb2.from("listings").select("slug,title,species,morph,sex,age_text,price,city,listing_images(storage_path,position)").eq("category_id", (cat as any).id).order("created_at", { ascending: false }).limit(4),
+      sb2.from("guides").select("slug,name,latin,level,image_path").eq("category_slug", g.category_slug).neq("slug", g.slug).order("sort", { ascending: true }).limit(6),
+    ]);
+    relListings = (ls || []).map((l: any) => ({ ...l, cover: (l.listing_images || []).sort((a: any, b: any) => (a.position || 0) - (b.position || 0))[0]?.storage_path || null }));
+    sibGuides = gs || [];
+  }
+
   return (
     <>
       <Header />
@@ -119,6 +139,25 @@ export default async function GuideDetail({ params }: { params: Promise<{ slug: 
               ))}
             </div>
           </>
+        ) : null}
+
+        {cat ? (
+          <section style={{ marginTop: 38 }}>
+            <div className="section-head" style={{ marginBottom: 16 }}>
+              <h2 style={{ fontSize: 22 }}>Satılık {(cat as any).name}</h2>
+              <Link href={catPath((cat as any).slug)}>Tümünü gör →</Link>
+            </div>
+            {relListings.length
+              ? <div className="grid">{relListings.map((l: any) => <ListingCard key={l.slug} l={l} />)}</div>
+              : <p style={{ color: "var(--muted)" }}>Şu an bu türde ilan yok. <Link href={catPath((cat as any).slug)} style={{ color: "#fff" }}>Kategoriye göz at →</Link></p>}
+          </section>
+        ) : null}
+
+        {sibGuides.length ? (
+          <section style={{ marginTop: 30 }}>
+            <div className="section-head" style={{ marginBottom: 16 }}><h2 style={{ fontSize: 22 }}>İlgili rehberler</h2></div>
+            <div className="guide-grid">{sibGuides.map((gg: any) => <GuideCard key={gg.slug} g={gg} />)}</div>
+          </section>
         ) : null}
       </main>
       <Footer />
