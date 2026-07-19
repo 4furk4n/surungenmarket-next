@@ -45,6 +45,11 @@ export default function IlanVer() {
     e.preventDefault(); setErr(""); setBusy(true);
     try {
       const uid = user.id;
+      if (!editId) {
+        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const { count } = await sb.from("listings").select("id", { count: "exact", head: true }).eq("user_id", uid).gte("created_at", weekAgo);
+        if ((count || 0) >= 5) { setErr("Haftalık ilan sınırına ulaştın: 7 günde en fazla 5 ilan verebilirsin. Birkaç gün sonra tekrar dene."); setBusy(false); return; }
+      }
       const price = f.type === "sahiplendirme" ? 0 : (f.price ? parseInt(f.price, 10) : 0);
       const row: any = {
         category_id: f.category_id || null, title: f.title, species: f.species || null, morph: f.morph || null,
