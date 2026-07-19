@@ -39,7 +39,7 @@ export default function MessageSeller({ listingId, sellerId, sellerName }: { lis
               </div>
             ) : (
               <form onSubmit={send} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Merhaba, ilanınız hâlâ mevcut mu?" required
+                <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Merhaba, ilanınız hâlâ mevcut mu?" required maxLength={2000}
                   style={{ padding: "10px 14px", borderRadius: 9, border: "1px solid var(--border-2)", background: "var(--bg-3)", color: "#fff", fontSize: 14, minHeight: 100, outline: "none", resize: "vertical" }} />
                 <button className="btn btn-primary" disabled={busy} type="submit">{busy ? "Gönderiliyor…" : "Gönder"}</button>
               </form>

@@ -109,7 +109,7 @@ export default function IlanVer() {
                 {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
-            <div><label style={lbl}>Başlık</label><input style={inS} value={f.title} onChange={set("title")} placeholder="Örn: Leopar gecko — Tangerine morph" required /></div>
+            <div><label style={lbl}>Başlık</label><input style={inS} value={f.title} onChange={set("title")} placeholder="Örn: Leopar gecko — Tangerine morph" required maxLength={140} /></div>
             <div className="iv2">
               <div><label style={lbl}>Tür</label><input style={inS} value={f.species} onChange={set("species")} placeholder="Leopar gecko" /></div>
               <div><label style={lbl}>Morph</label><input style={inS} value={f.morph} onChange={set("morph")} placeholder="Tangerine" /></div>
@@ -125,7 +125,7 @@ export default function IlanVer() {
               <div><label style={lbl}>Fiyat (₺)</label><input style={inS} type="number" value={f.price} onChange={set("price")} placeholder="2500" disabled={f.type === "sahiplendirme"} /></div>
               <div><label style={lbl}>Şehir</label><input style={inS} value={f.city} onChange={set("city")} placeholder="İstanbul" /></div>
             </div>
-            <div><label style={lbl}>Açıklama</label><textarea style={{ ...inS, minHeight: 110, resize: "vertical" }} value={f.description} onChange={set("description")} placeholder="Hayvan hakkında detaylar…" /></div>
+            <div><label style={lbl}>Açıklama</label><textarea style={{ ...inS, minHeight: 110, resize: "vertical" }} value={f.description} onChange={set("description")} placeholder="Hayvan hakkında detaylar…" maxLength={5000} /></div>
             <div className="iv2">
               <div><label style={lbl}>WhatsApp (opsiyonel)</label><input style={inS} value={f.whatsapp} onChange={set("whatsapp")} placeholder="905321112233" /></div>
               <div><label style={lbl}>Instagram (opsiyonel)</label><input style={inS} value={f.instagram} onChange={set("instagram")} placeholder="kullaniciadi" /></div>

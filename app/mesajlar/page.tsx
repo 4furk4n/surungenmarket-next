@@ -108,7 +108,7 @@ export default function Mesajlar() {
                     })}
                   </div>
                   <form onSubmit={sendReply} style={{ padding: 12, borderTop: "1px solid var(--border)", display: "flex", gap: 8 }}>
-                    <input value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Mesaj yaz…" style={{ flex: 1, padding: "10px 14px", borderRadius: 9, border: "1px solid var(--border-2)", background: "var(--bg-3)", color: "#fff", fontSize: 14, outline: "none" }} />
+                    <input value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Mesaj yaz…" maxLength={2000} style={{ flex: 1, padding: "10px 14px", borderRadius: 9, border: "1px solid var(--border-2)", background: "var(--bg-3)", color: "#fff", fontSize: 14, outline: "none" }} />
                     <button className="btn btn-primary" type="submit">Gönder</button>
                   </form>
                 </>

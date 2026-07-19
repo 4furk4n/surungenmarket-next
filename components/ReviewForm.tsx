@@ -32,7 +32,7 @@ export default function ReviewForm({ sellerId }: { sellerId: string }) {
           <span key={n} onClick={() => setRating(n)} style={{ cursor: "pointer", fontSize: 24, color: n <= rating ? "#ffce54" : "var(--border-2)" }}>★</span>
         ))}
       </div>
-      <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Deneyimini yaz…" required
+      <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Deneyimini yaz…" required maxLength={2000}
         style={{ padding: "10px 14px", borderRadius: 9, border: "1px solid var(--border-2)", background: "var(--bg-3)", color: "#fff", fontSize: 14, minHeight: 80, outline: "none" }} />
       <button className="btn btn-primary" disabled={busy} type="submit" style={{ justifySelf: "start" }}>{busy ? "…" : "Değerlendir"}</button>
     </form>

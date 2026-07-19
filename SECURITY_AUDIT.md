@@ -21,7 +21,7 @@ Sır sızıntısı, tehlikeli sink (eval/child_process), zararlı `dangerouslySe
 - **Etki:** Tam yönetici ele geçirme (blog/rehber/kategori/site görselleri yönetimi + tüm ilan/mesaj silme).
 - **Düzeltme (hazır, non-destructive):** `protect_profile_role` BEFORE INSERT/UPDATE trigger'ı — giriş yapmış admin-olmayan kullanıcının `role` değişikliğini yok sayar; servis rolü/SQL Editor/signup trigger'ı (auth.uid() null) etkilenmez. (SQL aşağıda Bölüm 8/Ek.)
 - **Test:** Normal hesapla rol değişimi denenir → `role` 'user' kalır. Admin ataması SQL Editor'den yapılabilir.
-- **Durum:** SQL hazır; kullanıcının Supabase'de çalıştırması bekleniyor.
+- **Durum:** ✅ **GİDERİLDİ** — `trg_protect_profile_role` trigger'ı production'da `profiles` tablosunda INSERT ve UPDATE için aktif. Doğrulandı.
 
 ## 4. Yüksek riskli bulgular
 ### Y-1 · Güvenlik başlıkları eksik → DÜZELTİLDİ
@@ -49,8 +49,9 @@ Sır sızıntısı, tehlikeli sink (eval/child_process), zararlı `dangerouslySe
 - **D-3** Instagram link oluşturma kullanıcı girdisini `instagram.com/` sonrasına ekliyor (rel=nofollow noopener var; düşük).
 
 ## 7. Düzeltilen sorunlar (bu denetimde)
+- **K-1** profiles rol yükseltme → ✅ **GİDERİLDİ** (`trg_protect_profile_role` trigger'ı production'da aktif).
 - **Y-1** Güvenlik başlıkları → `next.config.mjs`'e eklendi.
-- (K-1 için düzeltme SQL'i hazırlandı; çalıştırma kullanıcıda.)
+- **O-2** İstemci tarafı uzunluk sınırları form alanlarına eklendi (`maxLength`); sunucu-tarafı zorunluluk için Ek-C (DB CHECK) önerildi.
 
 ## 8. Manuel yapılması gerekenler
 1. **KRİTİK:** `protect_profile_role` trigger SQL'ini Supabase'de çalıştır (Ek-A).
@@ -79,7 +80,7 @@ Sır sızıntısı, tehlikeli sink (eval/child_process), zararlı `dangerouslySe
 - (DB) Çalıştırılacak SQL: Ek-A (kritik), Ek-B/Ek-C (öneri).
 
 ## 13. Production'a geçiş kontrol listesi
-- [ ] Ek-A (profiles rol trigger) Supabase'de çalıştırıldı ve test edildi.
+- [x] Ek-A (profiles rol trigger) Supabase'de çalıştırıldı ve test edildi. ✅
 - [ ] `next.config.mjs` security-audit branch'inde, preview'da CSP dahil doğrulandı.
 - [ ] Görseller (Supabase), giriş, ilan ver, mesajlaşma preview'da çalışıyor.
 - [ ] (Öneri) reviews kısıtları ve uzunluk CHECK'leri değerlendirildi.
@@ -126,3 +127,28 @@ alter table public.listings add constraint listings_desc_len check (description 
 alter table public.messages add constraint messages_body_len check (char_length(body) <= 2000) not valid;
 alter table public.reviews add constraint reviews_body_len check (body is null or char_length(body) <= 2000) not valid;
 ```
+
+## Ek-D · mesaj hız sınırı (öneri — Y-2)
+```sql
+create or replace function public.enforce_message_rate()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare cnt int;
+begin
+  if exists (select 1 from public.profiles p where p.id = new.sender_id and p.role = 'admin') then
+    return new;
+  end if;
+  select count(*) into cnt from public.messages
+    where sender_id = new.sender_id and created_at > now() - interval '1 minute';
+  if cnt >= 10 then
+    raise exception 'Çok hızlı mesaj gönderiyorsun. Lütfen biraz bekle.';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_message_rate on public.messages;
+create trigger trg_message_rate
+  before insert on public.messages
+  for each row execute function public.enforce_message_rate();
+```
+Dakikada 10 mesaj sınırı; adminler muaf. Geri alma: `drop trigger trg_message_rate on public.messages;`
