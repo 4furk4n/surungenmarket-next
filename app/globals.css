@@ -350,3 +350,33 @@
     .section { padding: 36px 16px 8px; }
     .form-grid { grid-template-columns: 1fr; }
   }
+
+  /* ---------- Responsive form ızgaraları ---------- */
+  .iv2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .iv3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) {
+    .iv2, .iv3 { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Mobil alt menü (bottom nav) ---------- */
+  .mobile-nav { display: none; }
+  @media (max-width: 760px) {
+    .mobile-nav {
+      display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 150;
+      background: var(--bg-2); border-top: 1px solid var(--border);
+      justify-content: space-around; align-items: flex-end;
+      padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+    }
+    .mobile-nav a {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+      font-size: 10.5px; color: var(--muted); text-decoration: none; padding: 4px 0;
+    }
+    .mobile-nav a span { font-size: 18px; line-height: 1; }
+    .mobile-nav a:hover, .mobile-nav a:active { color: #fff; }
+    .mobile-nav .mn-add span {
+      background: #fff; color: #0c0c0e; width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 22px;
+      margin-top: -16px; box-shadow: 0 4px 12px rgba(0,0,0,.45);
+    }
+    body { padding-bottom: 66px; }
+  }

@@ -105,23 +105,23 @@ export default function IlanVer() {
               </select>
             </div>
             <div><label style={lbl}>Başlık</label><input style={inS} value={f.title} onChange={set("title")} placeholder="Örn: Leopar gecko — Tangerine morph" required /></div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div className="iv2">
               <div><label style={lbl}>Tür</label><input style={inS} value={f.species} onChange={set("species")} placeholder="Leopar gecko" /></div>
               <div><label style={lbl}>Morph</label><input style={inS} value={f.morph} onChange={set("morph")} placeholder="Tangerine" /></div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+            <div className="iv3">
               <div><label style={lbl}>Cinsiyet</label>
                 <select style={inS} value={f.sex} onChange={set("sex")}><option value="">—</option><option value="m">Erkek</option><option value="f">Dişi</option><option value="x">Belirsiz</option></select>
               </div>
               <div><label style={lbl}>Yaş</label><input style={inS} value={f.age_text} onChange={set("age_text")} placeholder="6 aylık" /></div>
               <div><label style={lbl}>Doğum yılı</label><input style={inS} type="number" value={f.birth_year} onChange={set("birth_year")} placeholder="2025" /></div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div className="iv2">
               <div><label style={lbl}>Fiyat (₺)</label><input style={inS} type="number" value={f.price} onChange={set("price")} placeholder="2500" disabled={f.type === "sahiplendirme"} /></div>
               <div><label style={lbl}>Şehir</label><input style={inS} value={f.city} onChange={set("city")} placeholder="İstanbul" /></div>
             </div>
             <div><label style={lbl}>Açıklama</label><textarea style={{ ...inS, minHeight: 110, resize: "vertical" }} value={f.description} onChange={set("description")} placeholder="Hayvan hakkında detaylar…" /></div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div className="iv2">
               <div><label style={lbl}>WhatsApp (opsiyonel)</label><input style={inS} value={f.whatsapp} onChange={set("whatsapp")} placeholder="905321112233" /></div>
               <div><label style={lbl}>Instagram (opsiyonel)</label><input style={inS} value={f.instagram} onChange={set("instagram")} placeholder="kullaniciadi" /></div>
             </div>

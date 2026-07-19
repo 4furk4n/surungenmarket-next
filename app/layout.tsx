@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import MobileNav from "@/components/MobileNav";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 const DESC = "Sürüngenden amfibiye, güvenilir yetiştiricilerden binlerce ilan. Satın al, sat ya da ücretsiz sahiplendir.";
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="tr">
-      <body>{children}</body>
+      <body>{children}<MobileNav /></body>
     </html>
   );
 }
