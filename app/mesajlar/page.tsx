@@ -32,7 +32,9 @@ export default function Mesajlar() {
   }, []);
 
   useEffect(() => {
-    sb.auth.getUser().then(({ data }) => { const u = data.user?.id || null; setUid(u); if (u) load(u); });
+    sb.auth.getSession().then(({ data }) => { const u = data.session?.user?.id || null; setUid(u); if (u) load(u); });
+    const { data: sub } = sb.auth.onAuthStateChange((_e, s) => { const u = s?.user?.id || null; setUid(u); if (u) load(u); });
+    return () => sub.subscription.unsubscribe();
   }, [load]);
 
   const convMap: Record<string, Conv> = {};

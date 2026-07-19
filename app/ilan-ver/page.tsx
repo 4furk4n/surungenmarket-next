@@ -21,8 +21,8 @@ export default function IlanVer() {
 
   useEffect(() => {
     sb.from("categories").select("id,name,sort").order("sort", { ascending: true }).then(({ data }) => setCats(data || []));
-    sb.auth.getUser().then(async ({ data }) => {
-      const u = data.user ?? null; setUser(u);
+    sb.auth.getSession().then(async ({ data }) => {
+      const u = data.session?.user ?? null; setUser(u);
       const id = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("id") : null;
       if (u && id) {
         const { data: l } = await sb.from("listings").select("*").eq("id", id).eq("user_id", u.id).maybeSingle();

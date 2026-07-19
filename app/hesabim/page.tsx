@@ -29,7 +29,9 @@ export default function Hesabim() {
   }
 
   useEffect(() => {
-    sb.auth.getUser().then(({ data }) => { setUser(data.user ?? null); if (data.user) load(data.user.id); });
+    sb.auth.getSession().then(({ data }) => { const u = data.session?.user ?? null; setUser(u); if (u) load(u.id); });
+    const { data: sub } = sb.auth.onAuthStateChange((_e, s) => { const u = s?.user ?? null; setUser(u); if (u) load(u.id); });
+    return () => sub.subscription.unsubscribe();
   }, []);
 
   async function onAvatar(e: React.ChangeEvent<HTMLInputElement>) {

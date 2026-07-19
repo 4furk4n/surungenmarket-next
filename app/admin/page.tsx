@@ -17,10 +17,14 @@ export default function Admin() {
   const [tab, setTab] = useState<"blog" | "guide" | "images" | "cats">("blog");
 
   useEffect(() => {
-    sb.auth.getUser().then(async ({ data }) => {
-      const u = data.user?.id || null; setUid(u);
+    async function check(u: string | null) {
+      setUid(u);
       if (u) { const { data: p } = await sb.from("profiles").select("role").eq("id", u).maybeSingle(); setRole((p as any)?.role || null); }
-    });
+      else setRole(null);
+    }
+    sb.auth.getSession().then(({ data }) => check(data.session?.user?.id || null));
+    const { data: sub } = sb.auth.onAuthStateChange((_e, s) => check(s?.user?.id || null));
+    return () => sub.subscription.unsubscribe();
   }, []);
 
   return (
